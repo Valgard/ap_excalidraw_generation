@@ -94,7 +94,7 @@ def base_element(type_, id_, x, y, w, h):
     }
 
 
-def _shape(type_, id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness):
+def _shape(type_, id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness, angle):
     el = base_element(type_, id_, x, y, w, h)
     el["backgroundColor"] = fill
     el["strokeColor"] = stroke
@@ -102,25 +102,26 @@ def _shape(type_, id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness
     if dashed:
         el["strokeStyle"] = "dashed"
     el["roughness"] = roughness
+    el["angle"] = angle
     return el
 
 
 def rect(id_, x, y, w, h, *, fill="transparent", stroke="#1e1e1e",
-         stroke_width=2, dashed=False, rounded=True, roughness=1):
-    el = _shape("rectangle", id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness)
+         stroke_width=2, dashed=False, rounded=True, roughness=1, angle=0):
+    el = _shape("rectangle", id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness, angle)
     if rounded:
         el["roundness"] = {"type": 3}
     return el
 
 
 def ellipse(id_, x, y, w, h, *, fill="transparent", stroke="#1e1e1e",
-            stroke_width=2, dashed=False, roughness=1):
-    return _shape("ellipse", id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness)
+            stroke_width=2, dashed=False, roughness=1, angle=0):
+    return _shape("ellipse", id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness, angle)
 
 
 def diamond(id_, x, y, w, h, *, fill="transparent", stroke="#1e1e1e",
-            stroke_width=2, dashed=False, roughness=1):
-    return _shape("diamond", id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness)
+            stroke_width=2, dashed=False, roughness=1, angle=0):
+    return _shape("diamond", id_, x, y, w, h, fill, stroke, stroke_width, dashed, roughness, angle)
 
 
 def text(id_, x, y, w, h, content, *, font="hand", font_size=20,

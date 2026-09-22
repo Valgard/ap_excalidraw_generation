@@ -77,6 +77,26 @@ def test_label_mirrors_container_angle():
     assert xt.label("plain-t", plain, "Hi")["angle"] == 0
 
 
+def test_shape_angle_parameter_is_seen_by_a_bound_label():
+    """angle= on the constructor lands on the element and reaches a label bound
+    in the same call.
+
+    Setting angle after construction still works, but a label created together
+    with the shape would not see it — label() reads the container's angle when
+    the text element is built. The parameter removes that ordering trap.
+    """
+    assert xt.rect("r", 0, 0, 160, 80, angle=0.4)["angle"] == 0.4
+    assert xt.ellipse("e", 0, 0, 120, 120, angle=0.2)["angle"] == 0.2
+    assert xt.diamond("dm", 0, 0, 140, 80, angle=0.1)["angle"] == 0.1
+    assert xt.rect("plain", 0, 0, 160, 80)["angle"] == 0
+
+    from excalidraw import Diagram
+    d = Diagram("angle-probe")
+    d.box("r", 0, 0, 160, 80, angle=0.4, text="Hi")
+    els = {e["id"]: e for e in d.elements}
+    assert els["r"]["angle"] == els["r-t"]["angle"] == 0.4
+
+
 def test_connect_anchors_to_facing_edges_and_binds_both():
     a = xt.rect("a", 80, 20, 220, 60)      # bottom-center = (190, 80)
     b = xt.diamond("b", 120, 140, 140, 80) # top-center    = (190, 140)
