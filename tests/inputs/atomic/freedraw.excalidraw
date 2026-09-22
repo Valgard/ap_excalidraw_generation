@@ -1,0 +1,59 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [
+    {
+      "id": "fd",
+      "type": "freedraw",
+      "x": 20,
+      "y": 20,
+      "width": 200,
+      "height": 100,
+      "angle": 0,
+      "strokeColor": "#e03131",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "roundness": null,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "boundElements": null,
+      "updated": 1700000000000,
+      "link": null,
+      "locked": false,
+      "seed": 666666666,
+      "version": 1,
+      "versionNonce": 666666666,
+      "isDeleted": false,
+      "index": "a1",
+      "points": [
+        [0, 0],
+        [20, 30],
+        [40, 10],
+        [60, 50],
+        [80, 20],
+        [100, 60],
+        [120, 30],
+        [140, 70],
+        [160, 40],
+        [180, 80],
+        [200, 50]
+      ],
+      "pressures": [0.5, 0.6, 0.7, 0.8, 0.7, 0.6, 0.7, 0.8, 0.7, 0.6, 0.5],
+      "simulatePressure": false,
+      "lastCommittedPoint": [200, 50]
+    }
+  ],
+  "appState": {
+    "gridModeEnabled": false,
+    "gridSize": 20,
+    "gridStep": 5,
+    "lockedMultiSelections": {},
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}

@@ -1,0 +1,44 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [
+    {
+      "id": "fr1",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "width": 200,
+      "height": 120,
+      "angle": 0.4,
+      "strokeColor": "#bbb",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "roundness": null,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "boundElements": [],
+      "updated": 1700000000000,
+      "link": null,
+      "locked": false,
+      "seed": 500000001,
+      "version": 1,
+      "versionNonce": 500000001,
+      "isDeleted": false,
+      "index": "a1",
+      "name": "Rotated Frame"
+    }
+  ],
+  "appState": {
+    "gridModeEnabled": false,
+    "gridSize": 20,
+    "gridStep": 5,
+    "lockedMultiSelections": {},
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}

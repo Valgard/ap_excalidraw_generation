@@ -1,0 +1,95 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [
+    {
+      "id": "ln",
+      "type": "line",
+      "x": 0,
+      "y": 0,
+      "width": 200,
+      "height": 1,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "roundness": null,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "boundElements": [
+        {
+          "id": "lbl",
+          "type": "text"
+        }
+      ],
+      "updated": 1700000000000,
+      "link": null,
+      "locked": false,
+      "seed": 9003407,
+      "version": 1,
+      "versionNonce": 1940629233,
+      "isDeleted": false,
+      "index": "a1",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          200,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "lbl",
+      "type": "text",
+      "x": 15,
+      "y": -12.0,
+      "width": 170,
+      "height": 25,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "roundness": null,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "boundElements": null,
+      "updated": 1700000000000,
+      "link": null,
+      "locked": false,
+      "seed": 1507809526,
+      "version": 1,
+      "versionNonce": 510862819,
+      "isDeleted": false,
+      "index": "a2",
+      "text": "x",
+      "originalText": "x",
+      "containerId": "ln",
+      "fontFamily": 1,
+      "fontSize": 20,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "lineHeight": 1.25,
+      "autoResize": null
+    }
+  ],
+  "appState": {
+    "gridModeEnabled": false,
+    "gridSize": 20,
+    "gridStep": 5,
+    "lockedMultiSelections": {},
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}

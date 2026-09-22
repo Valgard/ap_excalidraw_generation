@@ -1,0 +1,71 @@
+{
+  "seed": 42,
+  "options": {
+    "maxRandomnessOffset": 2,
+    "roughness": 1,
+    "bowing": 1,
+    "stroke": "#000",
+    "strokeWidth": 1,
+    "curveTightness": 0,
+    "curveFitting": 0.95,
+    "curveStepCount": 9,
+    "fillStyle": "hachure",
+    "fillWeight": -1,
+    "hachureAngle": -41,
+    "hachureGap": -1,
+    "dashOffset": -1,
+    "dashGap": -1,
+    "zigzagOffset": -1,
+    "seed": 42,
+    "disableMultiStroke": false,
+    "disableMultiStrokeFill": false,
+    "preserveVertices": false,
+    "fillShapeRoughnessGain": 0.8,
+    "randomizer": {
+      "seed": 1737600618
+    }
+  },
+  "sets": [
+    {
+      "type": "path",
+      "ops": [
+        {
+          "op": "move",
+          "data": [
+            -1.744160454636759,
+            -1.326165387379592
+          ]
+        },
+        {
+          "op": "bcurveTo",
+          "data": [
+            40.63623481646984,
+            15.866521143660629,
+            78.84188436293773,
+            34.04976955628203,
+            200.5849242372746,
+            78.66940373764868
+          ]
+        },
+        {
+          "op": "move",
+          "data": [
+            -0.21328728767391542,
+            0.09891903393206901
+          ]
+        },
+        {
+          "op": "bcurveTo",
+          "data": [
+            58.469894601321386,
+            24.53906032308459,
+            118.84999649067717,
+            48.345896313408254,
+            200.5458044113757,
+            80.54054703030184
+          ]
+        }
+      ]
+    }
+  ]
+}

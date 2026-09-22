@@ -1,0 +1,18 @@
+NotoSymbols.ttf
+===============
+Merged secondary symbol fallback (used after DejaVuSubset for symbols DejaVu lacks).
+
+Built deterministically by tools/build_noto_symbols.py from three OFL Noto fonts
+(pinned by SHA-256 in that script):
+  - Noto Sans Symbols   (variable, instantiated at wght=400)
+  - Noto Sans Symbols 2  (Regular)
+  - Noto Sans Math       (Regular)
+
+Each source is reduced to glyph-outline tables only, merged, then subset to
+codepoints >= U+2000 (Latin-free -> cannot poison a hand-drawn run in resvg).
+~5467 symbol glyphs.
+
+License: SIL Open Font License 1.1 (all three Noto sources are OFL). The full
+OFL text ships with each upstream font in the Google Fonts repository
+(github.com/google/fonts, ofl/notosanssymbols, ofl/notosanssymbols2,
+ofl/notosansmath). Copyright: The Noto Project Authors.

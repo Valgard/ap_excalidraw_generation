@@ -1,0 +1,10 @@
+Apple Color Emoji.ttf
+======================
+Extracted from macOS /System/Library/Fonts/Apple Color Emoji.ttc (font index 0)
+via fontTools, at build time (tools/build_fonts.py, macOS host required).
+
+Apple Color Emoji is PROPRIETARY to Apple Inc. — it is NOT covered by any
+open-source license (unlike the other bundled fonts). It is vendored here, in a
+PRIVATE repository via Git LFS, by the maintainer's explicit decision, to maximize
+emoji-rendering fidelity to diagrams originally exported on macOS (where the
+browser rasterizes emoji with this exact font). Do not redistribute publicly.
