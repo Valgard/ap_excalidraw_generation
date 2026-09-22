@@ -146,7 +146,10 @@ def label(id_, container, content, *, font="hand", font_size=20,
     """Bound text that is positioned inside a container and linked reciprocally.
     Sets containerId on the text element and adds the binding to container's boundElements."""
     cx, cy, cw, ch = container["x"], container["y"], container["width"], container["height"]
-    th = round(font_size * 1.25)
+    # Height must span ALL lines: the SVG exporter derives the bound text's
+    # y from the container and this height (port of getBoundTextElementPosition),
+    # so a one-line height on multi-line content renders half a line too low.
+    th = round(font_size * 1.25) * (content.count("\n") + 1)
     el = base_element("text", id_, cx + pad, cy + ch / 2 - th / 2, cw - 2 * pad, th)
     el["text"] = content
     el["originalText"] = content
@@ -158,6 +161,11 @@ def label(id_, container, content, *, font="hand", font_size=20,
     el["lineHeight"] = 1.25
     el["autoResize"] = None
     el["strokeColor"] = color
+    # Mirror the container's rotation, the way Excalidraw's rotateSingleElement
+    # does (packages/element/src/resizeElements.ts mutates the bound text with
+    # the container's angle). Without this the toolkit emits a scene Excalidraw
+    # itself never produces: container turned, label left axis-aligned.
+    el["angle"] = container.get("angle", 0)
     if container["boundElements"] is None:
         container["boundElements"] = []
     container["boundElements"].append({"id": id_, "type": "text"})

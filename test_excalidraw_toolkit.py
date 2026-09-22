@@ -47,6 +47,36 @@ def test_label_binds_reciprocally_and_centers():
     assert t["y"] + t["height"] / 2 == box["y"] + box["height"] / 2
 
 
+def test_label_multiline_height_spans_all_lines():
+    """A bound label's height must cover every line, not just the first.
+
+    The SVG exporter ignores the stored y and derives it from the container and
+    the text element's height, so a one-line height on two-line content renders
+    the block half a line below the container's centre.
+    """
+    box = xt.rect("box", 0, 100, 300, 60)
+    t = xt.label("box-t", box, "Entscheiden,\nwas gebaut wird", font_size=16)
+    line_h = round(16 * 1.25)
+    assert t["height"] == line_h * 2
+    assert t["y"] + t["height"] / 2 == box["y"] + box["height"] / 2
+
+
+def test_label_mirrors_container_angle():
+    """A bound label carries its container's rotation.
+
+    Excalidraw's rotateSingleElement mutates the bound text with the container's
+    angle, so a scene where only the container is rotated is one Excalidraw would
+    never produce — and it renders with the label left axis-aligned.
+    """
+    box = xt.rect("box", 0, 0, 160, 80)
+    box["angle"] = 0.4
+    t = xt.label("box-t", box, "Hi")
+    assert t["angle"] == 0.4
+
+    plain = xt.rect("plain", 0, 0, 160, 80)
+    assert xt.label("plain-t", plain, "Hi")["angle"] == 0
+
+
 def test_connect_anchors_to_facing_edges_and_binds_both():
     a = xt.rect("a", 80, 20, 220, 60)      # bottom-center = (190, 80)
     b = xt.diamond("b", 120, 140, 140, 80) # top-center    = (190, 140)
