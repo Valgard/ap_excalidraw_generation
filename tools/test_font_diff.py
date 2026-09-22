@@ -444,7 +444,7 @@ def test_analyze_blur_affects_corr_not_ink():
 
 CALIB = dict(ink_lo=0.55, ink_hi=1.8, corr_min=0.10, shift_max=10.0)  # driver defaults
 _ROOT = pathlib.Path(__file__).resolve().parent.parent            # excalidraw-generation/
-_E2E_SRC = _ROOT / "tests/inputs/atkinson-shiffrin-de.excalidraw"
+_E2E_SRC = _ROOT / "tests/inputs/integration/atkinson-shiffrin-de.excalidraw"
 
 
 def _render_ink(src, opts):

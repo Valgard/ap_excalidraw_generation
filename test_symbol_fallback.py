@@ -80,8 +80,8 @@ def test_symbol_free_fixture_geometry_and_text_still_match():
     """The pure-text code-1 fixture must still match the committed reference on the
     dimensions the suite validates (path geometry, text content, positions, viewBox) —
     the generalization must not perturb the fast-path."""
-    inp = json.loads(pathlib.Path("tests/inputs/text.excalidraw").read_text())
-    ref = pathlib.Path("tests/fixtures/svg/text.svg").read_text()
+    inp = json.loads(pathlib.Path("tests/inputs/atomic/text.excalidraw").read_text())
+    ref = pathlib.Path("tests/oracle/atomic/text.svg").read_text()
     ours = excalidraw_svg.to_svg(inp)
     d = svg_compare.diff(ours, ref)
     assert d["path_count_ok"] and d["viewbox_ok"], d

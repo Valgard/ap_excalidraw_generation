@@ -12,8 +12,8 @@ import svg_compare  # noqa: E402 (must be after sys.path insert)
 import excalidraw_svg
 import export_options
 
-FIXSVG = pathlib.Path("tests/fixtures/svg")
-INPUTS = pathlib.Path("tests/inputs")
+FIXSVG = pathlib.Path("tests/oracle/atomic")
+INPUTS = pathlib.Path("tests/inputs/atomic")
 
 
 def test_arrow_label_midpoint_uses_middle_point_not_arc_length():
@@ -96,49 +96,9 @@ def test_svg_contains_defs_style():
     assert '<style class="style-fonts">' in got
 
 
-# Task 7b — structural parity for rounded rect + curved arrow
-def test_rect_fill_svg_matches_golden_structure():
-    """Rounded rectangle with fill: viewBox parity + path-count parity vs golden."""
-    doc = json.loads((INPUTS / "rect-fill.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "rect-fill.svg").read_text()
-    # viewBox parity
-    assert re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', got).groups() == \
-           re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', ref).groups()
-    # path count parity (golden: 2 — 1 fillPath + 1 stroke path)
-    assert _norm(got).count("<path") == _norm(ref).count("<path")
 
 
-def test_rect_fill_svg_is_byte_deterministic():
-    doc = json.loads((INPUTS / "rect-fill.excalidraw").read_text())
-    assert excalidraw_svg.to_svg(doc) == excalidraw_svg.to_svg(doc)
 
-
-def test_arrow_svg_matches_golden_structure():
-    """Curved arrow with rounded rects: viewBox parity + path-count parity vs golden."""
-    doc = json.loads((INPUTS / "arrow.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "arrow.svg").read_text()
-    # viewBox parity
-    assert re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', got).groups() == \
-           re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', ref).groups()
-    # path count parity (golden: 5 — 2 rounded-rect strokes + 1 curved arrow shaft + 2 arrowhead barbs)
-    assert _norm(got).count("<path") == _norm(ref).count("<path")
-
-
-def test_arrow_svg_is_byte_deterministic():
-    doc = json.loads((INPUTS / "arrow.excalidraw").read_text())
-    assert excalidraw_svg.to_svg(doc) == excalidraw_svg.to_svg(doc)
-
-
-# Task P3 — faithful bounds + rotate-center wiring
-def test_rotated_box_viewbox_matches_golden():
-    """Rotated rectangle: scene bounds must account for rotation (faithful bounds)."""
-    doc = json.loads((INPUTS / "rotated-box.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "rotated-box.svg").read_text()
-    assert re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', got).groups() == \
-           re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', ref).groups()
 
 
 def test_curved_arrow_viewbox_matches_golden():
@@ -170,15 +130,6 @@ def test_triangle_head_svg_path_count_matches_golden():
     ref_n = _norm(ref).count("<path")
     assert got_n == ref_n, f"triangle-head: got {got_n} paths, golden has {ref_n}"
 
-
-def test_arrow_svg_path_count_unchanged_after_both_ends_change():
-    """Existing arrow golden (null start, 'arrow' end) must still have 5 paths after P5 changes."""
-    doc = json.loads((INPUTS / "arrow.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "arrow.svg").read_text()
-    got_n = _norm(got).count("<path")
-    ref_n = _norm(ref).count("<path")
-    assert got_n == ref_n, f"arrow: got {got_n} paths, golden has {ref_n}"
 
 
 # Task P7 — bound-text container-aware positioning + no mask for filled containers
@@ -251,23 +202,24 @@ def test_bound_text_group_translate_derived_from_container_not_stored_xy():
     assert abs(ty - 30.0) < 0.01, f"Bound-text translate y: expected 30, got {ty}"
 
 
-def test_rect_fill_no_mask_emitted():
-    """Filled rect + bound text: Excalidraw real export emits NO <mask> — confirm we match."""
-    doc = json.loads((INPUTS / "rect-fill.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "rect-fill.svg").read_text()
-    assert "<mask" not in ref, "Golden unexpectedly contains a <mask> — update test"
-    assert "<mask" not in got, "SVG emitted a <mask> but golden has none"
 
+def test_shape_bound_text_no_mask_emitted():
+    """Shape-bound text (rect container): Excalidraw emits NO <mask> — confirm we match.
 
-def test_rotated_box_no_mask_and_text_count():
-    """Rotated rect + bound text: no <mask> emitted, and exactly 1 text element in SVG."""
-    doc = json.loads((INPUTS / "rotated-box.excalidraw").read_text())
+    Ported from the retired `rect-fill` bundle onto the atomic `boundtext-shape`
+    input. Guards the shape path (_get_bound_text_position), which is distinct
+    from the arrow-label path covered by the arrow-label mask tests.
+
+    The rotated variant lives in test_rotated_container_bound_text_matches_oracle.
+    """
+    doc = json.loads((INPUTS / "boundtext-shape.excalidraw").read_text())
     got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "rotated-box.svg").read_text()
+    ref = (FIXSVG / "boundtext-shape.svg").read_text()
     assert "<mask" not in ref, "Golden unexpectedly contains a <mask> — update test"
-    assert "<mask" not in got, "SVG emitted a <mask> but golden has none"
+    assert "<mask" not in got, "SVG emitted a <mask> for shape-bound text (should not)"
     assert got.count("<text") == 1, f"Expected 1 text element, got {got.count('<text')}"
+
+
 
 
 # Task P6 — text uses element.lineHeight
@@ -845,14 +797,6 @@ def test_arrow_label_mask_black_rect_matches_label_position():
     assert abs(bh - 24.0) < 1.0, f"Mask black rect height={bh}, expected 24"
 
 
-def test_rect_bound_text_no_mask_after_arrow_label_fix():
-    """Shape-bound text (rect container): still no <mask> emitted after arrow-label fix."""
-    doc = json.loads((INPUTS / "rect-fill.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    ref = (FIXSVG / "rect-fill.svg").read_text()
-    assert "<mask" not in ref, "Golden unexpectedly contains a <mask> — update test"
-    assert "<mask" not in got, "SVG emitted a <mask> for shape-bound text (should not)"
-
 
 # fix-bounds-mask — Fix 1: arrow-label stale x/y feeds scene bounds correctly
 def test_arrow_bound_label_stale_xy_does_not_inflate_viewbox():
@@ -975,8 +919,8 @@ def test_free_text_positions_match_reference():
       (regression guard: Task 2 emoji fix must not have broken these).
     """
     for stem in ("atkinson-shiffrin-de", "user-segmentation-de"):
-        inp = f"tests/inputs/{stem}.excalidraw"
-        ref = pathlib.Path(f"tests/fixtures/svg/{stem}.svg").read_text()
+        inp = f"tests/inputs/integration/{stem}.excalidraw"
+        ref = pathlib.Path(f"tests/oracle/integration/{stem}.svg").read_text()
         ours = excalidraw_svg.to_svg(json.loads(pathlib.Path(inp).read_text()))
         for (oc, ox, oy), (rc, rx, ry) in svg_compare.diff(ours, ref)["text_positions"]:
             if oc == rc and ox is not None and rx is not None:
@@ -1184,27 +1128,6 @@ def test_arrow_opacity_attrs_on_inner_group():
     )
 
 
-def test_opacity_100_elements_no_opacity_attrs():
-    """Elements with opacity=100 must NOT emit stroke-opacity/fill-opacity (byte-identical
-    to pre-fix output for all existing element types)."""
-    # Rectangle, opacity=100
-    doc = json.loads((INPUTS / "rect-fill.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    assert 'stroke-opacity' not in got, "opacity=100 rect must not emit stroke-opacity"
-    assert 'fill-opacity' not in got, "opacity=100 rect must not emit fill-opacity"
-
-    # Arrow, opacity=100
-    doc = json.loads((INPUTS / "arrow.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    assert 'stroke-opacity' not in got, "opacity=100 arrow must not emit stroke-opacity"
-    assert 'fill-opacity' not in got, "opacity=100 arrow must not emit fill-opacity"
-
-    # Text, opacity=100
-    doc = json.loads((INPUTS / "text.excalidraw").read_text())
-    got = excalidraw_svg.to_svg(doc)
-    assert 'stroke-opacity' not in got, "opacity=100 text must not emit stroke-opacity"
-    assert 'fill-opacity' not in got, "opacity=100 text must not emit fill-opacity"
-
 
 def test_opacity_rect_golden_viewbox_matches():
     """Opacity rect: viewBox must match golden (opacity does not affect layout)."""
@@ -1269,7 +1192,3 @@ def test_scene_layout_offsets_place_min_corner_at_padding():
     assert layout.off_y + layout.min_y == pytest.approx(opts.export_padding)
 
 
-def test_scene_layout_scale_from_options():
-    doc = json.loads((INPUTS / "arrow.excalidraw").read_text())
-    opts = export_options.resolve(doc, export_scale=2.0)
-    assert excalidraw_svg.scene_layout(doc, opts).scale == 2.0

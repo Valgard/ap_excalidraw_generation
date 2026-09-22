@@ -237,8 +237,8 @@ import svg_compare
 
 def test_dashed_arrow_arrowhead_matches_reference():
     # memgpt-tiers-de has dashed arrows with roundness:2; its arrowhead paths must match.
-    inp = "tests/inputs/memgpt-tiers-de.excalidraw"
-    ref = pathlib.Path("tests/fixtures/svg/memgpt-tiers-de.svg").read_text()
+    inp = "tests/inputs/integration/memgpt-tiers-de.excalidraw"
+    ref = pathlib.Path("tests/oracle/integration/memgpt-tiers-de.svg").read_text()
     ours = excalidraw_svg.to_svg(json.loads(pathlib.Path(inp).read_text()))
     d = svg_compare.diff(ours, ref)
     assert d["path_count_ok"], d["first_divergence"]
@@ -246,7 +246,7 @@ def test_dashed_arrow_arrowhead_matches_reference():
 
 
 def test_atkinson_dashed_curved_arrow_matches_reference():
-    inp = "tests/inputs/atkinson-shiffrin-de.excalidraw"
-    ref = pathlib.Path("tests/fixtures/svg/atkinson-shiffrin-de.svg").read_text()
+    inp = "tests/inputs/integration/atkinson-shiffrin-de.excalidraw"
+    ref = pathlib.Path("tests/oracle/integration/atkinson-shiffrin-de.svg").read_text()
     ours = excalidraw_svg.to_svg(json.loads(pathlib.Path(inp).read_text()))
     assert svg_compare.diff(ours, ref)["first_divergence"] is None

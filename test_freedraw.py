@@ -6,8 +6,8 @@ import re
 import excalidraw_svg
 import freehand
 
-FIXSVG = pathlib.Path("tests/fixtures/svg")
-INPUTS = pathlib.Path("tests/inputs")
+FIXSVG = pathlib.Path("tests/oracle/atomic")
+INPUTS = pathlib.Path("tests/inputs/atomic")
 
 
 def _norm(svg):
