@@ -105,6 +105,17 @@ def gen_bundle_atoms():
     emit("fill-solid", solid)
     emit("rotation", lambda d: d.box("r",0,0,160,80).__setitem__("angle",0.4))
     emit("boundtext-shape", lambda d: d.box("r",0,0,160,80, text="Hi"))
+    # Rotation x container binding: the one interaction the atomic corpus lacked.
+    # label() mirrors the container angle onto the bound text, matching what
+    # Excalidraw's rotateSingleElement writes — so this is a scene Excalidraw
+    # itself could produce.
+    def boundtext_rotated(d):
+        # Order matters: label() reads the container's angle when it is created,
+        # so the rotation must be set BEFORE the label is attached.
+        box = d.box("r", 0, 0, 160, 80)
+        box["angle"] = 0.4
+        d.label("r-t", box, "Hi")
+    emit("boundtext-rotated", boundtext_rotated)
 
 gen_bundle_atoms()
 

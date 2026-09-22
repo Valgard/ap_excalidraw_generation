@@ -202,6 +202,31 @@ def test_bound_text_group_translate_derived_from_container_not_stored_xy():
     assert abs(ty - 30.0) < 0.01, f"Bound-text translate y: expected 30, got {ty}"
 
 
+def test_rotated_container_bound_text_matches_oracle():
+    """Rotated container + bound text: rotation, mask and text count vs the oracle.
+
+    Closes the gap left by the retired `rotated-box` bundle — no other atomic
+    input pairs rotation with container binding.
+
+    The scene carries the angle on BOTH elements, which is what Excalidraw's
+    rotateSingleElement writes when a labelled shape is rotated (it mutates the
+    bound text with the container's angle) and what label() now mirrors. The
+    oracle confirms container and label turn together.
+    """
+    doc = json.loads((INPUTS / "boundtext-rotated.excalidraw").read_text())
+    got = excalidraw_svg.to_svg(doc)
+    ref = (FIXSVG / "boundtext-rotated.svg").read_text()
+
+    assert "<mask" not in ref, "Oracle unexpectedly contains a <mask> — update test"
+    assert "<mask" not in got, "SVG emitted a <mask> for shape-bound text (should not)"
+    assert got.count("<text") == ref.count("<text") == 1
+
+    ours = [float(a) for a in re.findall(r"rotate\(([-\d.]+)", got)]
+    theirs = [float(a) for a in re.findall(r"rotate\(([-\d.]+)", ref)]
+    assert len(ours) == len(theirs), f"rotate() count differs: {ours} vs {theirs}"
+    for o, t in zip(ours, theirs):
+        assert abs(o - t) < 0.01, f"rotation differs: ours={o} oracle={t}"
+
 
 def test_shape_bound_text_no_mask_emitted():
     """Shape-bound text (rect container): Excalidraw emits NO <mask> — confirm we match.
