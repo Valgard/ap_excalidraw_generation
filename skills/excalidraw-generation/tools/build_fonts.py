@@ -75,13 +75,13 @@ def _to_ttf(woff2, dst):
     f.save(dst)
 
 
-def _rename_family(path, new_family, ps_name=None):
+def _rename_family(path, new_family, ps_name=None, unique_id=None):
     """Patch nameID=1 (Family) and nameID=4 (Full name) in-place so resvg fontdb
     matches by exactly the CSS token we put in font-family: "new_family, ...".
     Also removes nameID=16 (Preferred Family) which can shadow nameID=1 in some runtimes.
     If *ps_name* is given, also patch nameID=6 (PostScript name) — needed to reproduce
     a specific vendored byte layout (e.g. Virgil's "Virgil-Regular"); other callers omit it
-    so their bytes stay unchanged.
+    so their bytes stay unchanged. *unique_id* likewise patches nameID=3 (Unique ID).
     """
     def _enc(rec, value):
         return value.encode('utf-16-be') if rec.isUnicode() else value.encode('latin-1', errors='replace')
@@ -97,6 +97,8 @@ def _rename_family(path, new_family, ps_name=None):
             rec.string = _enc(rec, new_family + ' Regular')
         elif rec.nameID == 6 and ps_name is not None:
             rec.string = _enc(rec, ps_name)
+        elif rec.nameID == 3 and unique_id is not None:
+            rec.string = _enc(rec, unique_id)
     for rec in to_remove:
         f['name'].names.remove(rec)
     _fix_timestamps(f)
@@ -198,10 +200,12 @@ def _build_dejavu_subset() -> None:
 # font, let resvg pull a symbol-bearing hand-drawn run wholesale into them
 # (usvg all_matched). We ship Latin-only subsets: same Latin/punctuation/digits,
 # but with the "contested" symbol codepoints removed, so the subset can never
-# cover a symbol run. Family name is preserved (via _rename_family) so it matches.
+# cover a symbol run. A subset is a modified font, so it may not keep the original's
+# name ("Cascadia Code" is an OFL Reserved Font Name, "Liberation" a Red Hat trademark):
+# each gets its own family, which fonts.subset_families() substitutes into the SVG.
 _POISONER_SUBSETS = {
-    "LiberationSans.ttf": "LiberationLatinOnly.ttf",
-    "Cascadia.ttf": "CascadiaLatinOnly.ttf",
+    "LiberationSans.ttf": ("SubsetSans.ttf", "SubsetSans"),
+    "Cascadia.ttf": ("SubsetMono.ttf", "SubsetMono"),
 }
 # Hand-drawn text fonts whose symbol coverage defines "safe" codepoints that the
 # poisoner subsets may retain. ALL five are included so the intersection protects the
@@ -226,9 +230,8 @@ def _build_poisoner_latin_only() -> None:
     # Contested = fallback-owned codepoints not in EVERY hand-drawn font. Digits/space
     # are safe (all five cover them); Latin is never in fallback_owned (Latin-free fallbacks).
     contested = fallback_owned - handdrawn_common
-    for src_name, out_name in _POISONER_SUBSETS.items():
+    for src_name, (out_name, family) in _POISONER_SUBSETS.items():
         src = OUT / src_name
-        orig_family = TTFont(str(src))["name"].getDebugName(1)  # e.g. "Liberation Sans"
         keep = sorted(_cmap_set(src_name) - contested)
         f = TTFont(str(src))
         opts = Options()
@@ -243,7 +246,7 @@ def _build_poisoner_latin_only() -> None:
         _fix_timestamps(f)
         out_path = str(OUT / out_name)
         f.save(out_path)
-        _rename_family(out_path, orig_family)  # subsetting can mangle nameID 1; restore it
+        _rename_family(out_path, family, ps_name=family, unique_id=family)
         print(f"{out_name}: kept {len(keep)} cps, dropped {len(_cmap_set(src_name)) - len(keep)} contested")
 
 

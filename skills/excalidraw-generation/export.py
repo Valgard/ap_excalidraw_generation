@@ -60,9 +60,10 @@ def render_png(src, out, scale=None, background=None, options=None):
     # Load ONLY the text fonts this document references (+ Latin-free fallbacks): keeping an
     # unused complete Latin font like LiberationSans out of resvg's fontdb prevents it from
     # poisoning a hand-drawn run that contains a symbol (→ ✗ …). See fonts.font_file_paths.
+    codes = fonts.used_codes(doc)
     png_bytes = resvg_py.svg_to_bytes(
-        svg_string=svg, zoom=float(options.export_scale),
-        font_files=fonts.font_file_paths(fonts.used_codes(doc), authentic_virgil=options.authentic_virgil),
+        svg_string=fonts.subset_families(svg, codes), zoom=float(options.export_scale),
+        font_files=fonts.font_file_paths(codes, authentic_virgil=options.authentic_virgil),
         skip_system_fonts=True,  # determinism: depend only on the bundled fonts
     )
     pathlib.Path(out).write_bytes(bytes(png_bytes))

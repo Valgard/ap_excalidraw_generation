@@ -163,25 +163,25 @@ def test_unknown_font_code_vertical_offset_does_not_crash():
 
 def test_font_file_paths_subsets_poisoner_in_mixed_doc():
     names = {p.split("/")[-1] for p in fonts.font_file_paths({1, 9})}  # hand-drawn + Liberation
-    assert "LiberationLatinOnly.ttf" in names
+    assert "SubsetSans.ttf" in names
     assert "LiberationSans.ttf" not in names
 
 
 def test_font_file_paths_keeps_full_poisoner_when_alone():
     names = {p.split("/")[-1] for p in fonts.font_file_paths({9})}     # Liberation only
     assert "LiberationSans.ttf" in names
-    assert "LiberationLatinOnly.ttf" not in names
+    assert "SubsetSans.ttf" not in names
 
 
 def test_font_file_paths_none_loads_full_poisoner():
     names = {p.split("/")[-1] for p in fonts.font_file_paths()}
     assert "LiberationSans.ttf" in names  # back-compat: None → everything, no guard
-    assert "LiberationLatinOnly.ttf" not in names
+    assert "SubsetSans.ttf" not in names
 
 
 def test_font_file_paths_subsets_cascadia_in_mixed_doc():
     names = {p.split("/")[-1] for p in fonts.font_file_paths({1, 3})}  # hand-drawn + Cascadia
-    assert "CascadiaLatinOnly.ttf" in names
+    assert "SubsetMono.ttf" in names
     assert "Cascadia.ttf" not in names
 
 
@@ -225,3 +225,17 @@ def test_to_svg_unknown_font_code_does_not_crash():
     }
     svg = excalidraw_svg.to_svg(doc)
     assert "<text" in svg or "<svg" in svg  # rendered something
+
+
+def test_subset_families_rewrites_svg_only_when_guard_swaps():
+    """The Latin-only subsets carry their own family names, so when font_file_paths swaps
+    them in, the SVG handed to resvg must ask for those names instead of the originals."""
+    svg = ('<text font-family="Liberation Sans, Segoe UI Emoji">a</text>'
+           '<text font-family="&quot;Cascadia Code&quot;, Segoe UI Emoji">b</text>'
+           '<text font-family="Virgil, Segoe UI Emoji">Liberation Sans</text>')
+    mixed = fonts.subset_families(svg, {1, 3, 9})
+    assert 'font-family="SubsetSans, Segoe UI Emoji"' in mixed
+    assert 'font-family="SubsetMono, Segoe UI Emoji"' in mixed
+    assert ">Liberation Sans</text>" in mixed  # text content is never touched
+    assert fonts.subset_families(svg, {9}) == svg     # no hand-drawn font → no swap
+    assert fonts.subset_families(svg, None) == svg    # back-compat: None → no swap

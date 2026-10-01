@@ -248,9 +248,13 @@ def _text_el(text, code, x=10, y=10, eid="t"):
 
 
 def _gray(doc, files):
-    """Render doc to a white-composited grayscale PIL Image via resvg."""
+    """Render doc to a white-composited grayscale PIL Image via resvg.
+
+    Like export.render_png, the SVG goes through subset_families so that a swapped-in
+    Latin-only subset is actually matched (otherwise its text would render in no font).
+    """
     png = resvg_py.svg_to_bytes(
-        svg_string=excalidraw_svg.to_svg(doc), zoom=2.0,
+        svg_string=fonts.subset_families(excalidraw_svg.to_svg(doc), fonts.used_codes(doc)), zoom=2.0,
         font_files=[str(p) for p in files], skip_system_fonts=True,
     )
     im = Image.open(io.BytesIO(bytes(png))).convert("RGBA")
@@ -285,14 +289,14 @@ def test_native_fallback_renders_symbol_in_plain_text():
 def test_mixed_font_doc_does_not_poison_handdrawn_line():
     """A doc mixing Virgil (code 1) + Liberation Sans (code 9) must not poison the Virgil line.
 
-    The poison guard swaps LiberationSans for LiberationLatinOnly when both hand-drawn and
+    The poison guard swaps LiberationSans for its Latin-only subset when both hand-drawn and
     poisoner codes are present. The 'flow' region of the rendered image must be closer
     (pixel distance) to a Virgil reference than to a Liberation reference — proving the
     guard kept the hand-drawn line in Virgil rather than collapsing it into Liberation Sans.
     Skipped when resvg_py or Pillow is not available.
     """
     mixed = _doc([_text_el("flow", 1, eid="v"), _text_el("label", 9, eid="l", y=120)])
-    files = fonts.font_file_paths(fonts.used_codes(mixed))  # guard active → LiberationLatinOnly
+    files = fonts.font_file_paths(fonts.used_codes(mixed))  # guard active → SubsetSans
     img = _gray(mixed, files)
     ref_virgil = _gray(_doc([_text_el("flow", 1)]), fonts.font_file_paths({1}))
     ref_lib = _gray(_doc([_text_el("flow", 9)]), fonts.font_file_paths({9}))
@@ -306,3 +310,27 @@ def test_mixed_font_doc_does_not_poison_handdrawn_line():
     d_v = sum(ImageChops.difference(img.crop(crop), ref_virgil.crop(crop)).getdata())
     d_l = sum(ImageChops.difference(img.crop(crop), ref_lib.crop(crop)).getdata())
     assert d_v * 2 < d_l, f"'flow' must stay Virgil (guard prevents poison): d_v={d_v} d_l={d_l}"
+
+
+@pytest.mark.parametrize("poisoner", [9, 3])  # Liberation Sans, Cascadia Code
+def test_export_renders_poisoner_line_through_renamed_subset(tmp_path, poisoner):
+    """End to end through export.render_png: in a mixed doc the poisoner line must still
+    render in its own shapes (via the renamed subset), not vanish or fall back."""
+    import export
+
+    def _render(doc, name):
+        out = tmp_path / name
+        export.render_png(doc, str(out), scale=2, background="light")
+        return Image.open(out).convert("L")
+
+    label = _text_el("label", poisoner, eid="l", y=120)
+    mixed = _render(_doc([_text_el("flow", 1, eid="v"), label]), "mixed.png")
+    ref_lib = _render(_doc([_text_el("flow", 1, eid="v", y=-500), label]), "lib.png")
+    ref_virgil = _render(_doc([_text_el("flow", 1, eid="v"), dict(label, fontFamily=1)]), "virgil.png")
+    w = min(mixed.size[0], ref_lib.size[0], ref_virgil.size[0])
+    crop = (0, mixed.size[1] - 110, w, mixed.size[1])  # bottom band = the 'label' line
+    band = mixed.crop(crop)
+    assert _ink(band) > 200, "label line vanished"
+    d_l = sum(ImageChops.difference(band, ref_lib.crop((0, ref_lib.size[1] - 110, w, ref_lib.size[1]))).getdata())
+    d_v = sum(ImageChops.difference(band, ref_virgil.crop((0, ref_virgil.size[1] - 110, w, ref_virgil.size[1]))).getdata())
+    assert d_l * 2 < d_v, f"label must render in font {poisoner}: d_l={d_l} d_v={d_v}"

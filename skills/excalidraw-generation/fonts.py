@@ -77,8 +77,14 @@ _FALLBACK_FILES = ["AppleColorEmoji.ttf", "NotoColorEmoji.ttf", "DejaVuSubset.tt
 _HANDDRAWN_CODES = {1, 5, 6, 7, 8}
 _POISONER_CODES = {2, 3, 9}
 # Full poisoner TTF filename → Latin-only subset TTF filename (built by tools/build_fonts.py)
-_LATIN_ONLY = {"LiberationSans.ttf": "LiberationLatinOnly.ttf",
-               "Cascadia.ttf": "CascadiaLatinOnly.ttf"}
+_LATIN_ONLY = {"LiberationSans.ttf": "SubsetSans.ttf",
+               "Cascadia.ttf": "SubsetMono.ttf"}
+# The subsets are modified fonts, so they may not keep the originals' names ("Cascadia
+# Code" is an OFL Reserved Font Name, "Liberation" a Red Hat trademark). They carry their
+# own single-token families; subset_families() points the SVG at them when they are
+# swapped in. Keys are the font-family attribute prefixes as emitted (XML-attr-escaped).
+_LATIN_ONLY_FAMILY = {'font-family="Liberation Sans,': 'font-family="SubsetSans,',
+                      'font-family="&quot;Cascadia Code&quot;,': 'font-family="SubsetMono,'}
 
 # Real metrics from packages/common/src/font-metadata.ts (verified 2026-07-04 via
 # ExcalidrawZ bundle index-BonTAGtm.js font-metadata block).
@@ -211,9 +217,28 @@ def font_file_paths(codes=None, authentic_virgil: bool = False) -> list:
     # referenced, swap each poisoner for its symbol-stripped Latin-only subset so
     # resvg cannot pull a symbol-bearing hand-drawn run wholesale into it. Skipped
     # for codes is None (back-compat "load everything").
-    if codes is not None:
-        cs = set(codes)
-        if cs & _HANDDRAWN_CODES and cs & _POISONER_CODES:
-            files = [_LATIN_ONLY.get(f, f) for f in files]
+    if _guard_active(codes):
+        files = [_LATIN_ONLY.get(f, f) for f in files]
     files.extend(_FALLBACK_FILES)
     return [str(_DIR / f) for f in files]
+
+
+def _guard_active(codes) -> bool:
+    """True when the poison guard swaps poisoners for their Latin-only subsets."""
+    if codes is None:
+        return False
+    cs = set(codes)
+    return bool(cs & _HANDDRAWN_CODES and cs & _POISONER_CODES)
+
+
+def subset_families(svg: str, codes) -> str:
+    """Rewrite *svg*'s font-family attributes to the subset families whenever
+    ``font_file_paths(codes)`` swaps the subsets in; otherwise return *svg* unchanged.
+
+    Only attribute prefixes are replaced, so text content naming a font stays intact.
+    """
+    if not _guard_active(codes):
+        return svg
+    for original, subset in _LATIN_ONLY_FAMILY.items():
+        svg = svg.replace(original, subset)
+    return svg

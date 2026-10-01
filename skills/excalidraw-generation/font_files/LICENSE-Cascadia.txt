@@ -4,6 +4,10 @@ with Reserved Font Name Cascadia Code.
 Source: https://github.com/microsoft/cascadia-code
 Bundled via: https://github.com/excalidraw/excalidraw (packages/excalidraw/fonts/Cascadia/)
 
+SubsetMono.ttf is a MODIFIED version of Cascadia Code: symbol code points were removed
+by tools/build_fonts.py. As the OFL requires for modified versions, it does not use
+the Reserved Font Name "Cascadia Code".
+
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
 http://scripts.sil.org/OFL
