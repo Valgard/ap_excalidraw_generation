@@ -81,10 +81,14 @@ _LATIN_ONLY = {"LiberationSans.ttf": "SubsetSans.ttf",
                "Cascadia.ttf": "SubsetMono.ttf"}
 # The subsets are modified fonts, so they may not keep the originals' names ("Cascadia
 # Code" is an OFL Reserved Font Name, "Liberation" a Red Hat trademark). They carry their
-# own single-token families; subset_families() points the SVG at them when they are
+# own single-token families; resvg_families() points the SVG at them when they are
 # swapped in. Keys are the font-family attribute prefixes as emitted (XML-attr-escaped).
 _LATIN_ONLY_FAMILY = {'font-family="Liberation Sans,': 'font-family="SubsetSans,',
                       'font-family="&quot;Cascadia Code&quot;,': 'font-family="SubsetMono,'}
+# Frame-name labels are emitted as "Helvetica" (parity with Excalidraw's own SVG export),
+# but no bundled font has that name; for resvg they render in the metric-compatible
+# Liberation Sans that used_codes() already loads for frames (code 2).
+_HELVETICA_FAMILY = ('font-family="Helvetica,', 'font-family="Liberation Sans,')
 
 # Real metrics from packages/common/src/font-metadata.ts (verified 2026-07-04 via
 # ExcalidrawZ bundle index-BonTAGtm.js font-metadata block).
@@ -231,12 +235,15 @@ def _guard_active(codes) -> bool:
     return bool(cs & _HANDDRAWN_CODES and cs & _POISONER_CODES)
 
 
-def subset_families(svg: str, codes) -> str:
-    """Rewrite *svg*'s font-family attributes to the subset families whenever
-    ``font_file_paths(codes)`` swaps the subsets in; otherwise return *svg* unchanged.
+def resvg_families(svg: str, codes) -> str:
+    """Rewrite *svg*'s font-family attributes to the families of the fonts that
+    ``font_file_paths(codes)`` hands to resvg: "Helvetica" → "Liberation Sans", and the
+    subset families whenever the poison guard swaps the subsets in.
 
-    Only attribute prefixes are replaced, so text content naming a font stays intact.
+    The emitted .svg keeps the original names; only the copy rendered by resvg is
+    rewritten. Only attribute prefixes are replaced, so text naming a font stays intact.
     """
+    svg = svg.replace(*_HELVETICA_FAMILY)
     if not _guard_active(codes):
         return svg
     for original, subset in _LATIN_ONLY_FAMILY.items():

@@ -78,7 +78,7 @@ PNG-render tests that a bare `pytest` skips):
   font database can pull a whole hand-drawn run into it. For the same reason, a diagram
   mixing a hand-drawn font with Liberation Sans or Cascadia loads Latin-only subsets of
   those two instead (`SubsetSans.ttf`, `SubsetMono.ttf`, see `fonts.font_file_paths` and
-  `fonts.subset_families`).
+  `fonts.resvg_families`).
 - **lineHeight** — per-font metrics (Excalifont, Helvetica, Cascadia); baseline offset
 - **Scaffolding cosmetics** — roundness (sharp/proportional/legacy), stroke style
   (solid/dashed/dotted), fill (solid/hatch/cross-hatch), stroke width, opacity

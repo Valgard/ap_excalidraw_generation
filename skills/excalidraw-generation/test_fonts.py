@@ -227,15 +227,23 @@ def test_to_svg_unknown_font_code_does_not_crash():
     assert "<text" in svg or "<svg" in svg  # rendered something
 
 
-def test_subset_families_rewrites_svg_only_when_guard_swaps():
+def test_resvg_families_rewrites_svg_only_when_guard_swaps():
     """The Latin-only subsets carry their own family names, so when font_file_paths swaps
     them in, the SVG handed to resvg must ask for those names instead of the originals."""
     svg = ('<text font-family="Liberation Sans, Segoe UI Emoji">a</text>'
            '<text font-family="&quot;Cascadia Code&quot;, Segoe UI Emoji">b</text>'
            '<text font-family="Virgil, Segoe UI Emoji">Liberation Sans</text>')
-    mixed = fonts.subset_families(svg, {1, 3, 9})
+    mixed = fonts.resvg_families(svg, {1, 3, 9})
     assert 'font-family="SubsetSans, Segoe UI Emoji"' in mixed
     assert 'font-family="SubsetMono, Segoe UI Emoji"' in mixed
     assert ">Liberation Sans</text>" in mixed  # text content is never touched
-    assert fonts.subset_families(svg, {9}) == svg     # no hand-drawn font → no swap
-    assert fonts.subset_families(svg, None) == svg    # back-compat: None → no swap
+    assert fonts.resvg_families(svg, {9}) == svg     # no hand-drawn font → no swap
+    assert fonts.resvg_families(svg, None) == svg    # back-compat: None → no swap
+
+
+def test_resvg_families_maps_frame_helvetica_to_bundled_liberation():
+    """Frame labels say "Helvetica", which no bundled font is called; resvg gets Liberation
+    Sans (loaded for frames via used_codes → code 2), or its subset when the guard swaps."""
+    svg = '<text font-family="Helvetica, Segoe UI Emoji">Frame 1</text>'
+    assert fonts.resvg_families(svg, {2}) == '<text font-family="Liberation Sans, Segoe UI Emoji">Frame 1</text>'
+    assert fonts.resvg_families(svg, {1, 2}) == '<text font-family="SubsetSans, Segoe UI Emoji">Frame 1</text>'

@@ -250,11 +250,11 @@ def _text_el(text, code, x=10, y=10, eid="t"):
 def _gray(doc, files):
     """Render doc to a white-composited grayscale PIL Image via resvg.
 
-    Like export.render_png, the SVG goes through subset_families so that a swapped-in
+    Like export.render_png, the SVG goes through resvg_families so that a swapped-in
     Latin-only subset is actually matched (otherwise its text would render in no font).
     """
     png = resvg_py.svg_to_bytes(
-        svg_string=fonts.subset_families(excalidraw_svg.to_svg(doc), fonts.used_codes(doc)), zoom=2.0,
+        svg_string=fonts.resvg_families(excalidraw_svg.to_svg(doc), fonts.used_codes(doc)), zoom=2.0,
         font_files=[str(p) for p in files], skip_system_fonts=True,
     )
     im = Image.open(io.BytesIO(bytes(png))).convert("RGBA")
@@ -334,3 +334,25 @@ def test_export_renders_poisoner_line_through_renamed_subset(tmp_path, poisoner)
     d_l = sum(ImageChops.difference(band, ref_lib.crop((0, ref_lib.size[1] - 110, w, ref_lib.size[1]))).getdata())
     d_v = sum(ImageChops.difference(band, ref_virgil.crop((0, ref_virgil.size[1] - 110, w, ref_virgil.size[1]))).getdata())
     assert d_l * 2 < d_v, f"label must render in font {poisoner}: d_l={d_l} d_v={d_v}"
+
+
+@pytest.mark.parametrize("with_handdrawn", [False, True])  # guard inactive / active
+def test_export_renders_frame_name_label(tmp_path, with_handdrawn):
+    """A frame's name label is emitted as font-family "Helvetica" (parity with Excalidraw's
+    SVG). resvg loads no font of that name, so export must map it to the bundled,
+    metric-compatible Liberation Sans — otherwise the label vanishes from the PNG."""
+    import copy
+    import export
+
+    base = json.loads((pathlib.Path(__file__).parent / "tests/inputs/atomic/frame.excalidraw").read_text())
+    if with_handdrawn:
+        base["elements"].append(_text_el("flow", 1, eid="v", x=20, y=40))
+
+    def _ink_of(doc, name):
+        out = tmp_path / name
+        export.render_png(doc, str(out), scale=2, background="light")
+        return _ink(Image.open(out).convert("L"))
+
+    unnamed = copy.deepcopy(base)
+    unnamed["elements"][0]["name"] = ""
+    assert _ink_of(base, "named.png") > _ink_of(unnamed, "unnamed.png") + 100, "frame name label vanished"

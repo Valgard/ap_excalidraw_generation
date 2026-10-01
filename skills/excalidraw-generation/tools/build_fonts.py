@@ -206,7 +206,7 @@ def _build_dejavu_subset() -> None:
 # but with the "contested" symbol codepoints removed, so the subset can never
 # cover a symbol run. A subset is a modified font, so it may not keep the original's
 # name ("Cascadia Code" is an OFL Reserved Font Name, "Liberation" a Red Hat trademark):
-# each gets its own family, which fonts.subset_families() substitutes into the SVG.
+# each gets its own family, which fonts.resvg_families() substitutes into the SVG.
 _POISONER_SUBSETS = {
     "LiberationSans.ttf": ("SubsetSans.ttf", "SubsetSans"),
     "Cascadia.ttf": ("SubsetMono.ttf", "SubsetMono"),

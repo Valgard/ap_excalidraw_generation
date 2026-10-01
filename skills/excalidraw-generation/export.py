@@ -62,7 +62,7 @@ def render_png(src, out, scale=None, background=None, options=None):
     # poisoning a hand-drawn run that contains a symbol (→ ✗ …). See fonts.font_file_paths.
     codes = fonts.used_codes(doc)
     png_bytes = resvg_py.svg_to_bytes(
-        svg_string=fonts.subset_families(svg, codes), zoom=float(options.export_scale),
+        svg_string=fonts.resvg_families(svg, codes), zoom=float(options.export_scale),
         font_files=fonts.font_file_paths(codes, authentic_virgil=options.authentic_virgil),
         skip_system_fonts=True,  # determinism: depend only on the bundled fonts
     )
