@@ -1,10 +1,14 @@
-"""Dev-time: render every articles/**/*.excalidraw (transparent, scale from source),
-compare to the sibling assets/<stem>.png via ImageMagick AE/PSNR. Regression signal only."""
+"""Dev-time: render every <articles>/**/*.excalidraw (transparent, scale from source),
+compare to <source-dir>/../assets/<stem>.png via ImageMagick AE/PSNR. Regression signal only.
+
+Usage: uv run --with resvg-py==0.3.3 python tools/verify_corpus.py <articles-dir>"""
 import pathlib, struct, subprocess, sys
-sys.path.insert(0, "<skill-dir>")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # skill root → export
 import export
 
-ART = pathlib.Path("<articles-dir>")
+if len(sys.argv) != 2:
+    sys.exit("usage: uv run --with resvg-py==0.3.3 python tools/verify_corpus.py <articles-dir>")
+ART = pathlib.Path(sys.argv[1])
 OUT = pathlib.Path("/tmp/verify-corpus"); OUT.mkdir(exist_ok=True)
 
 
