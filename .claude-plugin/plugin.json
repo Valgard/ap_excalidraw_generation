@@ -1,0 +1,14 @@
+{
+  "name": "excalidraw-generation",
+  "description": "Generate .excalidraw diagram files from code — format rules for clean loading, a Python toolkit with validator, and deterministic PNG export",
+  "version": "1.0.0",
+  "author": {
+    "name": "Valgard Trontheim"
+  },
+  "keywords": [
+    "excalidraw",
+    "diagram",
+    "python",
+    "png-export"
+  ]
+}
