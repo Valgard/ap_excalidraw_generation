@@ -22,3 +22,7 @@ __pycache__/
 !skills/excalidraw-generation/tests/inputs/integration/*.excalidraw
 
 skills/excalidraw-generation/tools/node_modules/
+
+# Proprietary Apple font — extracted locally on macOS, never committed
+# (uv run --with fonttools python tools/build_fonts.py --apple-emoji)
+skills/excalidraw-generation/font_files/AppleColorEmoji.ttf

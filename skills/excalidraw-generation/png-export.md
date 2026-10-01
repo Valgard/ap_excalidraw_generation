@@ -66,18 +66,19 @@ PNG-render tests that a bare `pytest` skips):
   (`http:`, `https:`, `mailto:`) and attribute-injection escaping
 - **RTL text** — bidirectional layout, correct alignment direction
 - **Z-order** — element stacking/layering matches `elements` array order
-- **Per-glyph font fallback** — each glyph a primary hand-drawn font lacks is wrapped in
-  a `<tspan>` routed to the first covering bundled fallback, in priority order: color
-  emoji → **Apple Color Emoji** (`AppleColorEmoji.ttf`, sbix; primary) then Noto Color
-  Emoji (secondary); technical symbols (arrows → ↑ ↓ ←, ∞ ≈ ∼, dingbats ✓ ✗ ✘, …) → a
-  Latin-free **DejaVu Sans symbol subset** (`DejaVuSubset.ttf`; primary) then a merged
-  **Noto Sans Symbols** font (`NotoSymbols.ttf`, Symbols+Symbols2+Math, ≥U+2000; secondary
-  net for rarer symbols DejaVu lacks). Every fallback is Latin-free on purpose — a
-  Latin-covering font as a tspan fallback makes resvg flip the whole run to that font /
-  sans-serif. A line the primary font fully covers takes a
-  byte-identical single-`<text>` fast-path (no tspans). Coverage sets are baked at build
-  time into `emoji_coverage.py` / `font_coverage.py` (fontTools build-time only; pure
-  Python at runtime).
+- **Per-glyph font fallback** — each text line is ONE `<text>` run (no `<tspan>`
+  routing); resvg's native fallback renders any glyph the primary font lacks from the
+  loaded Latin-free fallback fonts: color emoji → **Apple Color Emoji**
+  (`AppleColorEmoji.ttf`, sbix — proprietary, not bundled: on macOS extract it with
+  `uv run --with fonttools python tools/build_fonts.py --apple-emoji`) when present,
+  otherwise **Noto Color Emoji**; technical symbols (arrows → ↑ ↓ ←, ∞ ≈ ∼, dingbats
+  ✓ ✗ ✘, …) → a Latin-free **DejaVu Sans symbol subset** (`DejaVuSubset.ttf`) and a merged
+  **Noto Sans Symbols** font (`NotoSymbols.ttf`, Symbols+Symbols2+Math, ≥U+2000) for rarer
+  symbols. Every fallback is Latin-free on purpose — a Latin-covering font in resvg's
+  font database can pull a whole hand-drawn run into it. For the same reason, a diagram
+  mixing a hand-drawn font with Liberation Sans or Cascadia loads Latin-only subsets of
+  those two instead (`SubsetSans.ttf`, `SubsetMono.ttf`, see `fonts.font_file_paths` and
+  `fonts.subset_families`).
 - **lineHeight** — per-font metrics (Excalifont, Helvetica, Cascadia); baseline offset
 - **Scaffolding cosmetics** — roundness (sharp/proportional/legacy), stroke style
   (solid/dashed/dotted), fill (solid/hatch/cross-hatch), stroke width, opacity

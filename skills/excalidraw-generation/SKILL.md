@@ -216,7 +216,7 @@ edit, so `--revert-churn` never discards work.
 - `excalidraw_svg.py` — element document → deterministic SVG string
 - `export.py` — uv script: SVG → PNG via pinned `resvg-py` + CLI entry point
 - `tools/check_appstate.py` — classify `.excalidraw` diffs after a client rewrite (appState/churn vs real edits); deterministic, stdlib, CLI
-- `font_files/` — bundled Virgil / Excalifont / Cascadia woff2 files + licenses
+- `font_files/` — bundled TTF fonts (Excalidraw text fonts, emoji and symbol fallbacks) + licenses; the proprietary Apple Color Emoji is not bundled — on macOS extract it with `uv run --with fonttools python tools/build_fonts.py --apple-emoji`, otherwise emoji render with Noto Color Emoji
 - `examples/structured_flow.py` — panels + dashed labeled connector
 - `examples/illustration.py` — free primitives + group + free-arrow bridge
 - `examples/chart.py` — axes + function curve

@@ -11,7 +11,11 @@ Determinism: every save goes through _fix_timestamps (recalcTimestamp=False +
 zeroed head timestamps); the merged-Noto builder is SHA-256 pinned. Running this
 twice yields byte-identical outputs (see the double-build check in the repo).
 
-Requires: uv run --with fonttools --with brotli python tools/build_fonts.py"""
+Requires: uv run --with fonttools --with brotli python tools/build_fonts.py
+
+AppleColorEmoji.ttf is proprietary and therefore not in the repository. On macOS,
+extract it from the system font without rebuilding anything else:
+  uv run --with fonttools python tools/build_fonts.py --apple-emoji"""
 import glob, os, pathlib
 from fontTools.ttLib import TTFont
 from fontTools.merge import Merger
@@ -219,8 +223,10 @@ _HANDDRAWN_FILES = ("Virgil.ttf", "Excalifont-Regular.ttf", "Nunito.ttf", "Lilit
 def _build_poisoner_latin_only() -> None:
     fallback_owned = (
         _cmap_set("DejaVuSubset.ttf") | _cmap_set("NotoSymbols.ttf")
-        | _cmap_set("NotoColorEmoji.ttf") | _cmap_set("AppleColorEmoji.ttf")
+        | _cmap_set("NotoColorEmoji.ttf")
     )
+    # AppleColorEmoji.ttf is deliberately absent: it is optional (not in the repository),
+    # and adding its cmap leaves both subsets unchanged (546 / 763 codepoints kept).
     # INTERSECTION: a codepoint is "safe" only if ALL hand-drawn fonts cover it.
     # This protects the weakest font — the one whose run poisons when a fallback font
     # also covers the same symbol. Using union (old bug) would leave ~18 poison holes
@@ -250,7 +256,7 @@ def _build_poisoner_latin_only() -> None:
         print(f"{out_name}: kept {len(keep)} cps, dropped {len(_cmap_set(src_name)) - len(keep)} contested")
 
 
-def _build_apple_emoji() -> None:
+def _build_apple_emoji() -> bool:
     """Extract AppleColorEmoji.ttf from the system TTC if the bundled file is missing.
 
     Apple Color Emoji ships as a TTC (TrueType Collection) at:
@@ -258,7 +264,8 @@ def _build_apple_emoji() -> None:
 
     This function extracts font index 0 from that TTC and writes it as a plain TTF to
     font_files/AppleColorEmoji.ttf — but ONLY if the file does not already exist.
-    (On non-macOS systems, or if the file was pre-committed via Git LFS, this is a no-op.)
+    Returns False when the system TTC is missing (non-macOS); emoji then render with
+    NotoColorEmoji. main() treats that as optional, --apple-emoji as an error.
 
     The resulting TTF is used by resvg (via font_file_paths()) to render sbix colored emoji.
     Apple has no Latin letter coverage (cmap only: space, #, *, 0-9, ©, ®, plus emoji),
@@ -268,16 +275,17 @@ def _build_apple_emoji() -> None:
     out_path = OUT / "AppleColorEmoji.ttf"
     if out_path.exists():
         print(f"AppleColorEmoji.ttf already exists ({out_path.stat().st_size // 1024 // 1024} MB), skipping extraction")
-        return
+        return True
     if not APPLE_TTC.exists():
         print(f"WARNING: {APPLE_TTC} not found (non-macOS?), skipping Apple emoji extraction")
-        return
+        return False
     print(f"Extracting AppleColorEmoji font 0 from {APPLE_TTC} …")
     f = TTFont(str(APPLE_TTC), fontNumber=0)
     f.flavor = None
     _fix_timestamps(f)
     f.save(str(out_path))
     print(f"AppleColorEmoji.ttf written: {out_path.stat().st_size // 1024 // 1024} MB")
+    return True
 
 
 def main():
@@ -322,4 +330,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if sys.argv[1:] == ["--apple-emoji"]:
+        sys.exit(0 if _build_apple_emoji() else 1)
+    else:
+        main()

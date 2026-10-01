@@ -131,6 +131,10 @@ def test_apple_emoji_renders_colored_via_resvg():
     except ImportError as e:
         import pytest
         pytest.skip(f"resvg_py/PIL/numpy not installed: {e}")
+    if not (_fonts._DIR / "AppleColorEmoji.ttf").exists():
+        import pytest
+        pytest.skip("AppleColorEmoji.ttf not extracted (proprietary, not in the repository; "
+                    "macOS: uv run --with fonttools python tools/build_fonts.py --apple-emoji)")
 
     # Build a minimal SVG with the 🧠 emoji in an Apple tspan
     svg = (
